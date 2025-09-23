@@ -10,4 +10,18 @@ createdb:
 dropdb: 
 	docker exec -it postgres18rc1 dropdb simple_bank
 
-.PHONY: postgres createdb dropdb
+# To enter the PostgreSQL interactive terminal
+psql:
+	docker exec -it postgres18rc1 psql -U root -d simple_bank
+
+# To create migration files using the migrate tool
+migratenew:
+	migrate create -ext sql -dir db/migration -seq init_schema
+
+# To run database migrations using the migrate tool located at db/migration directory locally.
+migrateup:
+	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
+migratedown:
+	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
+
+.PHONY: postgres createdb dropdb psql migratenew migrateup migratedown
