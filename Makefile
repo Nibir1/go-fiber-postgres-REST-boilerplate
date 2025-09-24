@@ -14,7 +14,7 @@ dropdb:
 psql:
 	docker exec -it postgres18rc1 psql -U root -d simple_bank
 
-# To create migration files using the migrate tool
+# To create migration files using the migrate tool. Here, we are creating an initial migration file named init_schema. Later use new name for new migration files.
 migratenew:
 	migrate create -ext sql -dir db/migration -seq init_schema
 
@@ -23,9 +23,13 @@ migrateup:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
 migratedown:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
-	
+
 # To generate Go code from SQL queries using sqlc
 sqlc:
 	sqlc generate
 
-.PHONY: postgres createdb dropdb psql migratenew migrateup migratedown sqlc
+# To run Go tests with verbose output and code coverage
+test:
+	go test -v -cover ./...
+
+.PHONY: postgres createdb dropdb psql migratenew migrateup migratedown sqlc test
