@@ -23,5 +23,9 @@ migrateup:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
 migratedown:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
+	
+# To generate Go code from SQL queries using sqlc
+sqlc:
+	sqlc generate
 
-.PHONY: postgres createdb dropdb psql migratenew migrateup migratedown
+.PHONY: postgres createdb dropdb psql migratenew migrateup migratedown sqlc
