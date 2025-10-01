@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type txKeyType string
+
 func TestTransferTx(t *testing.T) {
 	store := NewStore(testDB)
 
@@ -22,11 +24,10 @@ func TestTransferTx(t *testing.T) {
 
 	errs := make(chan error)
 	results := make(chan TransferTxResult)
-
 	for i := 0; i < n; i++ {
 		txName := fmt.Sprintf("tx %d", i+1)
-		go func() {
-			ctx := context.WithValue(context.Background(), txKey, txName)
+		go func(txName string) {
+			ctx := context.WithValue(context.Background(), txKeyType("txKey"), txName)
 			result, err := store.TransferTx(ctx, TransferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
@@ -34,7 +35,7 @@ func TestTransferTx(t *testing.T) {
 			})
 			errs <- err
 			results <- result
-		}()
+		}(txName)
 	}
 
 	existed := make(map[int]bool)
@@ -124,45 +125,45 @@ func TestTransferTxDeadLock(t *testing.T) {
 	// run n concurrent transfer transactions
 	n := 10
 	amount := int64(10)
-	errs := make(chan error)
-
 	for i := 0; i < n; i++ {
-		txName := fmt.Sprintf("tx %d", i+1)
+		errs := make(chan error)
+		for i := 0; i < n; i++ {
+			txName := fmt.Sprintf("tx %d", i+1)
 
-		fromAccountId := account1.ID
-		toAccountId := account2.ID
+			fromAccountId := account1.ID
+			toAccountId := account2.ID
 
-		if i%2 == 1 {
-			fromAccountId = account2.ID
-			toAccountId = account1.ID
+			if i%2 == 1 {
+				fromAccountId = account2.ID
+				toAccountId = account1.ID
+			}
+
+			go func(txName string, fromAccountId, toAccountId int64) {
+				ctx := context.WithValue(context.Background(), txKeyType("txKey"), txName)
+				_, err := store.TransferTx(ctx, TransferTxParams{
+					FromAccountID: fromAccountId,
+					ToAccountID:   toAccountId,
+					Amount:        amount,
+				})
+				errs <- err
+			}(txName, fromAccountId, toAccountId)
 		}
+		// check results
+		for i := 0; i < n; i++ {
+			err := <-errs
+			require.NoError(t, err)
 
-		go func() {
-			ctx := context.WithValue(context.Background(), txKey, txName)
-			_, err := store.TransferTx(ctx, TransferTxParams{
-				FromAccountID: fromAccountId,
-				ToAccountID:   toAccountId,
-				Amount:        amount,
-			})
-			errs <- err
-		}()
-	}
-
-	// check results
-	for i := 0; i < n; i++ {
-		err := <-errs
+		}
+		// check the final updated balances
+		updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
 		require.NoError(t, err)
 
+		updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
+		require.NoError(t, err)
+
+		fmt.Println(">> After: ", updatedAccount1.Balance, updatedAccount2.Balance)
+
+		require.Equal(t, account1.Balance, updatedAccount1.Balance)
+		require.Equal(t, account2.Balance, updatedAccount2.Balance)
 	}
-	// check the final updated balances
-	updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
-	require.NoError(t, err)
-
-	updatedAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
-	require.NoError(t, err)
-
-	fmt.Println(">> After: ", updatedAccount1.Balance, updatedAccount2.Balance)
-
-	require.Equal(t, account1.Balance, updatedAccount1.Balance)
-	require.Equal(t, account2.Balance, updatedAccount2.Balance)
 }
