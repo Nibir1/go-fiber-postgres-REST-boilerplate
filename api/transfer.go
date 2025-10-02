@@ -42,11 +42,15 @@ func (server *Server) createTransfer(c *fiber.Ctx) error {
 		return nil
 	}
 
-	// 3. Retrieve authenticated user from context
-	authPayload := c.Locals(authorizationPayloadKey).(*token.Payload)
+	// 3. Retrieve authenticated user from payload
+	payload, ok := c.Locals(authorizationPayloadKey).(*token.Payload)
+	if !ok || payload == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResponse(fmt.Errorf("unauthorized")))
+	}
+	username := payload.Username
 
 	// 4. Ensure the "from" account belongs to the authenticated user
-	if fromAccount.Owner != authPayload.Username {
+	if fromAccount.Owner != username {
 		err := errors.New("from account doesn't belong to the authenticated user")
 		return c.Status(fiber.StatusUnauthorized).JSON(errorResponse(err))
 	}

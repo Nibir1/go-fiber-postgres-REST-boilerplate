@@ -26,41 +26,38 @@ type listAccountRequest struct {
 
 // createAccount handles the POST /accounts route
 func (server *Server) createAccount(c *fiber.Ctx) error {
-	// Request body structure
 	var req struct {
-		Currency string `json:"currency" validate:"required,currency"` // Validate supported currency
+		Currency string `json:"currency" validate:"required,currency"`
 	}
 
-	// Parse JSON body
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResponse(err))
 	}
 
-	// Validate request with our validator
 	if err := server.validate.Struct(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResponse(err))
 	}
 
-	// Get authenticated username from Fiber context (set by authMiddleware)
-	username, ok := c.Locals("username").(string)
-	if !ok || username == "" {
+	// -------------------
+	// Get username from payload
+	// -------------------
+	payload, ok := c.Locals(authorizationPayloadKey).(*token.Payload)
+	if !ok || payload == nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(errorResponse(fmt.Errorf("unauthorized")))
 	}
+	username := payload.Username
 
-	// Prepare parameters to create account
 	arg := db.CreateAccountParams{
 		Owner:    username,
 		Currency: req.Currency,
 		Balance:  0,
 	}
 
-	// Call the store (mocked in tests)
 	account, err := server.store.CreateAccount(c.Context(), arg)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResponse(err))
 	}
 
-	// Return the created account
 	return c.Status(fiber.StatusOK).JSON(account)
 }
 
