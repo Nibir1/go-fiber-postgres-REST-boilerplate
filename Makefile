@@ -28,8 +28,17 @@ migratedown:
 sqlc:
 	sqlc generate
 
+# To generate mock implementations of the Store interface using mockgen
+mock:
+	mockgen -package mockdb -destination db/mock/store.go github.com/nibir1/go-fiber-postgres-REST-boilerplate/db/sqlc Store
+
 # To run Go tests with verbose output and code coverage
 test:
 	go test -v -cover ./...
 
-.PHONY: postgres createdb dropdb psql migratenew migrateup migratedown sqlc test
+# To run the Go server application
+server:
+	go run main.go
+
+
+.PHONY: postgres createdb dropdb psql migratenew migrateup migratedown sqlc mock test server 
