@@ -41,4 +41,4 @@ server:
 	go run main.go
 
 
-.PHONY: postgres createdb dropdb psql migratenew migrateup migratedown sqlc mock test server 
+.PHONY: postgres createdb dropdb psql migratenew migrateup migratedown sqlc mock test server

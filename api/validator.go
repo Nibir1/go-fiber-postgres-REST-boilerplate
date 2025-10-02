@@ -22,25 +22,3 @@ var validCurrency validator.Func = func(fieldLevel validator.FieldLevel) bool {
 	// If the field is not a string, validation fails
 	return false
 }
-
-// ---------------------------
-// Register Validator with Fiber
-// ---------------------------
-
-// In Fiber, we need to register the custom validator with the Fiber app.
-// Fiber uses go-playground/validator under the hood when using ctx.BodyParser
-// with struct tags, so we can attach this custom validation.
-//
-// Example usage in server setup:
-//
-// 	app := fiber.New()
-// 	if v, ok := app.Config().Validator.Engine().(*validator.Validate); ok {
-// 		v.RegisterValidation("currency", validCurrency)
-// 	}
-//
-// Then in your struct:
-//
-//	type transferRequest struct {
-//		Amount   int64  `json:"amount" validate:"required,gt=0"`
-//		Currency string `json:"currency" validate:"required,currency"`
-//	}

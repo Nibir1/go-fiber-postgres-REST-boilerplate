@@ -14,12 +14,6 @@ import (
 // Request Structs
 // ---------------------------
 
-// createAccountRequest represents the JSON body for creating a new account
-type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required,alphanum"`    // Account owner username
-	Currency string `json:"currency" binding:"required,currency"` // Currency for the account (validated)
-}
-
 // listAccountRequest represents query parameters for listing accounts
 type listAccountRequest struct {
 	PageID   int32 `query:"page_id" binding:"required,min=1"`           // Current page number, min 1
@@ -30,36 +24,43 @@ type listAccountRequest struct {
 // Handlers
 // ---------------------------
 
-// createAccount handles POST /accounts endpoint
+// createAccount handles the POST /accounts route
 func (server *Server) createAccount(c *fiber.Ctx) error {
-	// 1. Parse JSON body
-	var req createAccountRequest
+	// Request body structure
+	var req struct {
+		Currency string `json:"currency" validate:"required,currency"` // Validate supported currency
+	}
+
+	// Parse JSON body
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResponse(err))
 	}
 
-	// 2. Extract authenticated username from token payload
-	authPayload := c.Locals(authorizationPayloadKey).(*token.Payload)
-	if req.Owner != authPayload.Username {
-		// Ensure user can only create account for themselves
-		err := errors.New("cannot create account for another user")
-		return c.Status(fiber.StatusUnauthorized).JSON(errorResponse(err))
+	// Validate request with our validator
+	if err := server.validate.Struct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errorResponse(err))
 	}
 
-	// 3. Prepare arguments for SQLC
+	// Get authenticated username from Fiber context (set by authMiddleware)
+	username, ok := c.Locals("username").(string)
+	if !ok || username == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResponse(fmt.Errorf("unauthorized")))
+	}
+
+	// Prepare parameters to create account
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    username,
 		Currency: req.Currency,
-		Balance:  0, // Default balance
+		Balance:  0,
 	}
 
-	// 4. Execute DB query
+	// Call the store (mocked in tests)
 	account, err := server.store.CreateAccount(c.Context(), arg)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResponse(err))
 	}
 
-	// 5. Return 200 OK with created account
+	// Return the created account
 	return c.Status(fiber.StatusOK).JSON(account)
 }
 

@@ -62,13 +62,3 @@ func authMiddlewareFiber(tokenMaker token.Maker) fiber.Handler {
 		return c.Next()
 	}
 }
-
-// ---------------------------
-// Usage Example in Fiber App
-// ---------------------------
-//
-// app := fiber.New()
-// tokenMaker, _ := token.NewPasetoMaker("some-secret-key")
-//
-// // Protected route
-// app.Get("/accounts", authMiddlewareFiber(tokenMaker), getAccountsHandler)
