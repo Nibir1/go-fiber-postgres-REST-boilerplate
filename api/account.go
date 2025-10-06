@@ -91,28 +91,36 @@ func (server *Server) getAccount(c *fiber.Ctx) error {
 // listAccount handles GET /accounts endpoint
 func (server *Server) listAccount(c *fiber.Ctx) error {
 	// 1. Parse query parameters
-	var req listAccountRequest
+	var req struct {
+		PageID   int `query:"page_id" validate:"required,min=1"`
+		PageSize int `query:"page_size" validate:"required,min=5,max=10"`
+	}
 	if err := c.QueryParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResponse(err))
 	}
 
-	// 2. Extract authenticated username
+	// 2. Validate query params
+	if err := server.validate.Struct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errorResponse(err))
+	}
+
+	// 3. Extract authenticated username
 	authPayload := c.Locals(authorizationPayloadKey).(*token.Payload)
 
-	// 3. Calculate DB offset for pagination
+	// 4. Prepare DB parameters
 	arg := db.ListAccountsParams{
 		Owner:  authPayload.Username,
 		Limit:  int64(req.PageSize),
 		Offset: int64((req.PageID - 1) * req.PageSize),
 	}
 
-	// 4. Execute DB query
+	// 5. Execute query
 	accounts, err := server.store.ListAccounts(c.Context(), arg)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResponse(err))
 	}
 
-	// 5. Return list of accounts
+	// 6. Return success response
 	return c.Status(fiber.StatusOK).JSON(accounts)
 }
 

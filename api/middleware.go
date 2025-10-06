@@ -7,8 +7,12 @@ import (
 	"github.com/nibir1/go-fiber-postgres-REST-boilerplate/token"
 )
 
-// Key used to store payload in Fiber context locals
-const authorizationPayloadKey = "authorization_payload"
+// Constants for authorization header and payload keys
+const (
+	authorizationHeaderKey  = "authorization"
+	authorizationTypeBearer = "bearer"
+	authorizationPayloadKey = "authorization_payload"
+)
 
 // ---------------------------
 // Auth Middleware for Fiber
