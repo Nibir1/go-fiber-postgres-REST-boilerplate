@@ -14,18 +14,14 @@ const (
 	authorizationPayloadKey = "authorization_payload"
 )
 
-// ---------------------------
-// Auth Middleware for Fiber
-// ---------------------------
-
-// authMiddlewareFiber creates a Fiber middleware function that validates JWT/Paseto tokens.
-// It ensures that requests to protected routes include a valid Authorization header.
+// authMiddlewareFiber returns a Fiber middleware function that validates JWT/Paseto tokens.
+// It ensures requests to protected routes include a valid Authorization header.
 func authMiddlewareFiber(tokenMaker token.Maker) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Retrieve the Authorization header from the request
-		authorizationHeader := c.Get("Authorization")
+		authorizationHeader := strings.TrimSpace(c.Get(authorizationHeaderKey))
 		if len(authorizationHeader) == 0 {
-			// If no header provided, return 401 Unauthorized
+			// No header provided
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "authorization header is missing",
 			})
@@ -34,7 +30,7 @@ func authMiddlewareFiber(tokenMaker token.Maker) fiber.Handler {
 		// Split the header into type and token value
 		fields := strings.Fields(authorizationHeader)
 		if len(fields) < 2 {
-			// Header does not contain a valid type/token pair
+			// Header format is invalid
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "invalid authorization header format",
 			})
@@ -44,25 +40,26 @@ func authMiddlewareFiber(tokenMaker token.Maker) fiber.Handler {
 		accessToken := fields[1]
 
 		// Ensure the auth type is "Bearer" (case-insensitive)
-		if strings.ToLower(authType) != "bearer" {
+		if strings.ToLower(authType) != authorizationTypeBearer {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "unsupported authorization type",
 			})
 		}
 
-		// Verify the access token using the provided token maker
+		// Verify the token
 		payload, err := tokenMaker.VerifyToken(accessToken)
 		if err != nil {
-			// Invalid or expired token
+			// Token is invalid or expired
+			// Internal error can be logged instead of sent to client in production
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "invalid or expired token: " + err.Error(),
+				"error": "invalid or expired token",
 			})
 		}
 
-		// Store the verified payload in Fiber's Locals, so it can be accessed in handlers
+		// Store the verified payload in Fiber locals for handlers to access
 		c.Locals(authorizationPayloadKey, payload)
 
-		// Continue to the next middleware or handler
+		// Call the next middleware or route handler
 		return c.Next()
 	}
 }

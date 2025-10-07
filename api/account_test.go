@@ -67,27 +67,6 @@ func requireBodyMatchAccounts(t *testing.T, body *bytes.Buffer, accounts []db.Ac
 	require.Equal(t, accounts, gotAccounts)
 }
 
-// addAuthorization adds a valid Bearer token to the request - Should be in middleware_test.go
-func addAuthorization(
-	t *testing.T,
-	request *http.Request,
-	tokenMaker token.Maker,
-	authorizationType string,
-	username string,
-	duration time.Duration,
-) {
-	// Create a new token using the provided token maker, username, and duration.
-	token, payload, err := tokenMaker.CreateToken(username, duration)
-	require.NoError(t, err)      // Ensure no errors occurred during token creation.
-	require.NotEmpty(t, payload) // Verify that the payload is not empty.
-
-	// Format the authorization header using the provided authorization type and token.
-	authorizationHeader := fmt.Sprintf("%s %s", authorizationType, token)
-
-	// Set the authorization header in the request's headers.
-	request.Header.Set(authorizationHeaderKey, authorizationHeader)
-}
-
 // ---------------------------
 // Fiber Test Server Helper
 // ---------------------------
