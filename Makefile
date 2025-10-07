@@ -21,8 +21,17 @@ migratenew:
 # To run database migrations using the migrate tool located at db/migration directory locally.
 migrateup:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
+
+# To run only the first migration file
+migrateup1:
+	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up 1	
+
 migratedown:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
+
+# To run only the first down migration file
+migratedown1:
+	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down 1
 
 # To generate Go code from SQL queries using sqlc
 sqlc:
@@ -41,4 +50,4 @@ server:
 	go run main.go
 
 
-.PHONY: postgres createdb dropdb psql migratenew migrateup migratedown sqlc mock test server
+.PHONY: postgres createdb dropdb psql migratenew migrateup migrateup1 migratedown migratedown1 sqlc mock test server
