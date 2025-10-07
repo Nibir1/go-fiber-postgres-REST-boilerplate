@@ -49,5 +49,8 @@ test:
 server:
 	go run main.go
 
+# To generate Swagger documentation
+swagger:
+	swag init
 
-.PHONY: postgres createdb dropdb psql migratenew migrateup migrateup1 migratedown migratedown1 sqlc mock test server
+.PHONY: postgres createdb dropdb psql migratenew migrateup migrateup1 migratedown migratedown1 sqlc mock test server swagger

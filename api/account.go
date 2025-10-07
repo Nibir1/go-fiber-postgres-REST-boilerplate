@@ -43,6 +43,20 @@ type deleteAccountRequest struct {
 // ------------ **API Functionality for Creating Accounts** ------------
 
 // **(server *Server) createAccount** POST. Handles creating a new account.
+
+// @Summary Create a new account
+// @Description Creates a new bank account for the authenticated user
+// @Tags Accounts
+// @Accept json
+// @Produce json
+// @Param account body createAccountRequest true "Account info"
+// @Success 200 {object} db.Account
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Security ApiKeyAuth
+// @Router /accounts [post]
 func (server *Server) createAccount(c *fiber.Ctx) error {
 	// 1. Parse Request Body
 	var req createAccountRequest
@@ -105,6 +119,20 @@ func (server *Server) createAccount(c *fiber.Ctx) error {
 // ------------ **API Functionality for Getting an Account** ------------
 
 // **(server *Server) getAccount** GET. Handles retrieving an account by /accounts/:id endpoint.
+
+// @Summary Get account by ID
+// @Description Retrieves an account by ID. Must belong to authenticated user.
+// @Tags Accounts
+// @Accept json
+// @Produce json
+// @Param id path int true "Account ID"
+// @Success 200 {object} db.Account
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Security ApiKeyAuth
+// @Router /accounts/{id} [get]
 func (server *Server) getAccount(c *fiber.Ctx) error {
 	// 1. Parse account ID from URL parameters
 	var req getAccountRequest
@@ -141,6 +169,21 @@ func (server *Server) getAccount(c *fiber.Ctx) error {
 // ------------ **API Functionality for Listing Accounts** ------------
 
 // **(server *Server) listAccount** GET. Handles retrieving a paginated list of accounts for the authenticated user.
+
+// @Summary List accounts
+// @Description Returns a paginated list of accounts for the authenticated user
+// @Tags Accounts
+// @Accept json
+// @Produce json
+// @Param page_id query int true "Page number"
+// @Param page_size query int true "Items per page"
+// @Success 200 {array} db.Account
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Security ApiKeyAuth
+// @Router /accounts [get]
 func (server *Server) listAccount(c *fiber.Ctx) error {
 	// 1. Parse query parameters
 	var req listAccountRequest
@@ -197,6 +240,20 @@ func (server *Server) listAccount(c *fiber.Ctx) error {
 // ------------ **API Functionality for Deleting an Account** ------------
 
 // deleteAccount handles DELETE /accounts/:id endpoint
+
+// @Summary Delete account
+// @Description Deletes an account by ID. Must belong to authenticated user.
+// @Tags Accounts
+// @Accept json
+// @Produce json
+// @Param id path int true "Account ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Security ApiKeyAuth
+// @Router /accounts/{id} [delete]
 func (server *Server) deleteAccount(c *fiber.Ctx) error {
 	// 1. Parse account ID from URL path
 	var req deleteAccountRequest

@@ -16,6 +16,7 @@ import (
 // ---------------------------
 
 // transferRequest represents the expected JSON body for creating a transfer
+// @Description Transfer request payload
 type transferRequest struct {
 	FromAccountID int64  `json:"from_account_id" binding:"required,min=1"` // ID of sender account, must be > 0
 	ToAccountID   int64  `json:"to_account_id" binding:"required,min=1"`   // ID of receiver account, must be > 0
@@ -59,6 +60,17 @@ func (server *Server) validAccount(c *fiber.Ctx, accountID int64, currency strin
 // ---------------------------
 
 // createTransfer handles POST /transfers endpoint
+
+// CreateTransfer godoc
+// @Summary      Create a new money transfer
+// @Description  Transfers a specified amount between two accounts if they belong to the authenticated user and share the same currency.
+// @Tags         Transfers
+// @Accept       json
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        transfer  body      transferRequest  true  "Transfer details"
+// @Success      200       {object}  db.TransferTxResult
+// @Router       /transfers [post]
 func (server *Server) createTransfer(c *fiber.Ctx) error {
 	// 1. Parse JSON request body into transferRequest struct
 	var req transferRequest

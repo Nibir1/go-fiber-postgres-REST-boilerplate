@@ -9,7 +9,18 @@ import (
 	db "github.com/nibir1/go-fiber-postgres-REST-boilerplate/db/sqlc"
 	"github.com/nibir1/go-fiber-postgres-REST-boilerplate/token"
 	"github.com/nibir1/go-fiber-postgres-REST-boilerplate/util"
+
+	"github.com/gofiber/swagger"                                  // swagger handler
+	_ "github.com/nibir1/go-fiber-postgres-REST-boilerplate/docs" // generated docs
 )
+
+// ---------------------------
+// Swagger Security Definition
+// ---------------------------
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 
 // ---------------------------
 // Server Struct
@@ -72,6 +83,9 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 // setUpRoutes defines all public and protected routes for the API server
 func (server *Server) setUpRoutes() {
 	app := server.app
+
+	// Swagger UI route
+	app.Get("/swagger/*", swagger.HandlerDefault) // default
 
 	// ---------------------
 	// PUBLIC ROUTES

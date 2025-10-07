@@ -16,6 +16,7 @@ import (
 // ---------------------------
 
 // createUserRequest represents the expected JSON body for creating a new user
+// @Description Create user request payload
 type createUserRequest struct {
 	Username string `json:"username" binding:"required,alphanum"` // Alphanumeric username, required
 	Password string `json:"password" binding:"required,min=6"`    // Password, min 6 chars
@@ -24,6 +25,7 @@ type createUserRequest struct {
 }
 
 // userResponse represents the JSON response returned for a user
+// @Description User response payload
 type userResponse struct {
 	Username          string    `json:"username"`            // Username of user
 	FullName          string    `json:"full_name"`           // Full name of user
@@ -44,12 +46,14 @@ func newUserResponse(user db.User) userResponse {
 }
 
 // loginUserRequest represents the expected JSON body for logging in
+// @Description Login request payload
 type loginUserRequest struct {
 	Username string `json:"username" binding:"required,alphanum"`
 	Password string `json:"password" binding:"required,min=6"`
 }
 
 // loginUserResponse represents the JSON response for login
+// @Description Login response payload
 type loginUserResponse struct {
 	AccessToken string       `json:"access_token"` // JWT/Paseto token
 	User        userResponse `json:"user"`         // User details
@@ -60,6 +64,16 @@ type loginUserResponse struct {
 // ---------------------------
 
 // createUser handles POST /users endpoint for creating a new user
+
+// CreateUser godoc
+// @Summary      Register a new user
+// @Description  Creates a new user with username, password, full name, and email
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        user  body      createUserRequest  true  "User info"
+// @Success      200   {object}  userResponse
+// @Router       /users [post]
 func (server *Server) createUser(c *fiber.Ctx) error {
 	// 1. Parse JSON request body into createUserRequest struct
 	var req createUserRequest
@@ -109,6 +123,16 @@ func (server *Server) createUser(c *fiber.Ctx) error {
 }
 
 // loginUser handles POST /users/login endpoint
+
+// LoginUser godoc
+// @Summary      Log in a user
+// @Description  Authenticates user credentials and returns a JWT access token
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        credentials  body      loginUserRequest  true  "Login credentials"
+// @Success      200  {object}  loginUserResponse
+// @Router       /users/login [post]
 func (server *Server) loginUser(c *fiber.Ctx) error {
 	// 1. Parse request body into loginUserRequest
 	var req loginUserRequest
