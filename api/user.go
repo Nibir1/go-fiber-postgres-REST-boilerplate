@@ -68,6 +68,11 @@ func (server *Server) createUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResponse(err))
 	}
 
+	// Manual validation
+	if req.Username == "" || req.Password == "" || req.FullName == "" || req.Email == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(errorResponse(errors.New("missing required fields")))
+	}
+
 	// 2. Hash password
 	hashedPassword, err := util.HashPassword(req.Password)
 	if err != nil {
@@ -109,6 +114,11 @@ func (server *Server) loginUser(c *fiber.Ctx) error {
 	var req loginUserRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResponse(err))
+	}
+
+	// Manual validation
+	if req.Username == "" || req.Password == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(errorResponse(errors.New("missing required fields")))
 	}
 
 	// 2. Retrieve user from DB by username
