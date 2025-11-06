@@ -60,12 +60,18 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	app.Use(logger.New())
 
 	// ✅ Enable CORS for frontend communication
+	allowedOrigins := config.AllowedOrigins
+	if allowedOrigins == "" {
+		// Default for tests or local dev (no wildcard when credentials are true)
+		allowedOrigins = "http://localhost:3000"
+	}
+
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     config.AllowedOrigins, // ✅ loaded from env/config
+		AllowOrigins:     allowedOrigins,
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		ExposeHeaders:    "Content-Length, Content-Type",
-		AllowCredentials: true, // ✅ now safe, no wildcard
+		AllowCredentials: true,
 	}))
 
 	// Initialize validator for request validation
