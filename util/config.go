@@ -14,6 +14,7 @@ type Config struct {
 	ServerAddress       string        `mapstructure:"SERVER_ADDRESS"`        // Server address where the application listens (e.g., "localhost:8080")
 	TokenSymmetricKey   string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`   // Symmetric key used for token signing (should be kept secret)
 	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"` // Duration for which access tokens are valid
+	AllowedOrigins      string        `mapstructure:"ALLOWED_ORIGINS"`       // Comma-separated list of allowed origins for CORS
 }
 
 // LoadConfig reads the application configuration from a specified file or environment variables
